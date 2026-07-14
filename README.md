@@ -28,6 +28,34 @@ Fact Guard enforces a workflow rather than a single instruction. It inserts a ve
 
 The rule underneath all five steps: **a visibly incomplete document that's honest beats a polished document that's wrong.**
 
+## Usage — important scope note
+
+Fact Guard's trigger behavior differs by task shape, and it's worth understanding this upfront rather than being surprised by it:
+
+**Auto-triggers reliably on:** formal, multi-part deliverables — market briefs, competitive analyses, stakeholder updates, research summaries, anything with several claims that reads like a document. Claude consults skills when a task genuinely needs extra instructions to do well, and a formal deliverable qualifies.
+
+**Needs explicit invocation (`/fact-guard`) for:** quick one-line lookups — a single stock price, a sports score, an exchange rate, "who's the current CEO of X." This is a known constraint of how Claude Skills work, not a bug specific to this skill: Claude only consults a skill when it judges the task can't be done well without it, and a simple factual lookup is something Claude can already attempt unaided — so the trigger can reasonably skip loading the skill even when the topic matches the description closely. No amount of description-tuning fully closes this gap; it's an architectural property of the trigger mechanism, confirmed through direct testing (a description explicitly naming "stock prices," "sports scores," and "current price" still didn't reliably auto-fire on a one-line price check).
+
+**Practical takeaway:** for quick factual lookups where you want the Verified/Estimated/Unknown discipline applied, invoke it explicitly:
+
+> how many goals were created by each team in july 12th worldcup football match
+> `/fact-guard`
+
+Result — labeled, sourced, and scoped to only what was actually confirmed:
+
+| Team | Goals |
+|---|---|
+| Argentina | 3 |
+| Switzerland | 1 |
+
+**Status:** Verified — pulled directly from live match data (status: final), not from memory. This was the only World Cup match played on July 12.
+
+That result is the skill working exactly as designed — a real tool call, an explicit Verified label, and a clear statement of what "the only match that day" claim was checked against, rather than an unqualified answer. The only gap is that it needed the explicit `/fact-guard` call to get there; it doesn't yet fire on its own for a request this short.
+
+If your workflow needs quick lookups to be covered without remembering to invoke it, two options that scale better than manual invocation per-message:
+- **Claude for Team/Enterprise:** admins can set default instructions at the workspace level, applying the same Verified/Estimated discipline to every user automatically, with no per-user setup.
+- **Personal use:** a saved custom instruction in your own Settings → Profile → Preferences can apply similar discipline to quick lookups specifically, though this only covers your own account, not other users of a shared public skill.
+
 ## What it handles
 
 - Documents built with real data (labels claims Verified without unnecessary hedging)
@@ -64,21 +92,25 @@ Then point Claude at the `SKILL.md` + `references/` folder, keeping the structur
 - **Claude Code / Cowork:** copy the cloned folder into your skills directory (e.g. `~/.claude/skills/fact-guard/`).
 - **Claude.ai / Claude Apps:** package the folder into a `.skill` bundle using Anthropic's [skill-creator packaging script](https://github.com/anthropics/skills), then upload it via Settings → Capabilities → Skills.
 
-## Usage
+## Example prompts
 
-You don't need to invoke this explicitly — it's written to trigger proactively whenever a request could tempt a model into stating a number, statistic, citation, or fact it hasn't actually verified in the conversation (market sizing, growth rates, "according to X," "studies show," data-backed reports without supplied data, etc.).
-
-Example prompts that should trigger it:
+Prompts that reliably auto-trigger fact-guard today:
 - "Write a competitive brief on the project management software market"
 - "Summarize our NPS trend from last quarter"
 - "Draft a stakeholder update citing our Q3 metrics"
+
+Prompts that currently need explicit `/fact-guard` invocation:
+- "Compare TCS and Infosys current stock price vs yesterday's close"
+- "How many goals were created by each team in the July 12th World Cup football match"
+- "What's the current USD to INR exchange rate?"
 
 ## Limitations
 
 - It cannot verify that a *retrieved* source is itself correct — it only guarantees the model doesn't fabricate on top of what was retrieved.
 - It's not a substitute for domain-specific fact-checking on legal, medical, or financial claims with real-world stakes.
 - It governs factual/numeric claims only — not general writing quality, tone, or style.
+- **Auto-triggering is unreliable for short, single-fact lookups** (see Usage above). This is a property of how Claude Skills decide when to consult a skill, not something fixable purely through description wording — treat explicit invocation as the expected pattern for quick lookups until Claude's triggering mechanism changes.
 
 ## Contributing
 
-Issues and pull requests are welcome — particularly additional test scenarios (positive or negative) that reveal gaps in the labeling or QA logic. If you're proposing a change to `SKILL.md`, please include the scenario that motivated it.
+Issues and pull requests are welcome — particularly additional test scenarios (positive or negative) that reveal gaps in the labeling or QA logic. If you're proposing a change to `SKILL.md`, please include the scenario that motivated it. If you find a task shape that should auto-trigger but doesn't, please include it as a reproducible prompt rather than a general description — that's the only way to distinguish an actual description gap from the auto-trigger ceiling described above.
