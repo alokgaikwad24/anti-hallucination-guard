@@ -27,7 +27,10 @@ Use this skill whenever a deliverable will contain any of:
   updates, PRDs with data-backed claims, exec summaries, research synthesis
 
 This applies **even if the user didn't ask for fact-checking** — if you're about to write a
-number or citation, this skill applies by default, not on request.
+number or citation, this skill applies by default, not on request. It also applies to short,
+casual factual answers, not just formal documents — a one-line reply stating a date, population
+figure, or statistic carries the same fabrication risk as a paragraph in a report; the format
+doesn't change whether the underlying claim needs a real source.
 
 This does not apply to: pure creative writing, brainstorming explicitly marked as hypothetical,
 or code (code has its own correctness bar, not this one).
@@ -64,7 +67,11 @@ to fill the gap.
 3. **Estimate transparently.** If a rough estimate is genuinely useful and the user would want
    directional numbers over none, you may reason to an estimate — but it must be visibly labeled
    as an estimate with the reasoning shown (see labeling rules below), and it must be based on
-   stated assumptions, not asserted as fact.
+   stated assumptions, not asserted as fact. This includes the inputs to the estimate, not just
+   the final number: if the estimate leans on a rate, ratio, or benchmark you didn't look up
+   (e.g. "assuming a 2% conversion rate"), that input is itself unverified — say so explicitly
+   ("I'm assuming X, not citing it") rather than stating it as if it were a known figure. An
+   estimate built on a silently-invented input is still fabrication, just with an extra step.
 4. **Flag as unknown.** If none of the above are viable in the moment, write the sentence without
    the number and mark it `[NEEDS SOURCE: <what's missing>]` inline. Do not round this off with
    a plausible-sounding invented figure "to keep the sentence smooth."
@@ -82,7 +89,7 @@ for how to make labels look professional in different document types):
 | Label | Meaning | Example |
 |---|---|---|
 | **Verified** | Directly from user-provided data or a tool result you can point to in this conversation | "Revenue grew 12% YoY (from uploaded Q3 financials, cell B14)" |
-| **Estimated** | Your reasoning/inference, explicitly built from stated assumptions, not a lookup | "Roughly 200–300 users (estimated from stated MAU and typical 2–3% conversion — not measured)" |
+| **Estimated** | Your reasoning/inference, explicitly built from stated assumptions, not a lookup | "Roughly 200–300 users (my estimate: stated MAU × an assumed 2–3% conversion — that conversion rate is my own assumption, not a benchmark I looked up)" |
 | **Unknown / Needs input** | You don't have it and didn't invent it | "[NEEDS SOURCE: current NPS score — not provided]" |
 
 Never present an Estimated or Unknown item using Verified-style confident phrasing. "Studies
@@ -158,6 +165,22 @@ section rather than only at the very start/end — see `references/qa-checklist.
 is inference, even when every input was real. Only report the number as Verified if a single
 source actually states that exact figure.
 
+**Numbers read from an uploaded image, chart, or scanned document.** Transcription is a separate
+risk from sourcing — the number is "from the user" but you're the one reading it off a picture.
+If the figure is clearly legible, treat it as Verified with a note of where it came from ("per
+the chart you shared"). If any digit is blurry, ambiguous, or you're inferring a value from a
+bar's height rather than a printed label, treat it as Estimated and say so — don't let "the user
+technically provided this" launder an uncertain read into a confident-looking number.
+
+**User explicitly asks to remove all hedging** ("no caveats," "make it sound confident," "cut the
+disclaimers," pitch-deck-style copy). This is a stronger request than just skipping the Sourcing
+Note (see above) — treat it the same way: the visible presentation can drop labels and caveats,
+but the underlying Verified/Estimated/Unknown discipline from Steps 1-4 still has to happen
+internally, and you still don't get to state an Unknown as if it were Verified just because the
+user wants confident-sounding prose. If dropping every caveat would mean presenting a real
+Unknown as fact, say once, briefly, that you're leaving that figure out rather than guessing —
+don't silently comply with a request that would require fabricating something.
+
 ## Interaction with copyright/quoting rules
 
 Verified-tier claims should almost always be paraphrased in your own words with a source
@@ -176,6 +199,12 @@ case, not an exception.
   stakes — for those, add the appropriate disclaimers per Claude's standard guidance regardless
   of this skill's labels.
 - It's not a proofreading or style skill — it only governs factual/numeric claims.
+- The Step 4 self-QA pass is still the same model checking its own draft in the same
+  conversation — it catches sloppiness and inconsistency well, but it shares whatever blind
+  spot produced the original error in the first place, so it's not equivalent to independent
+  review. For genuinely high-stakes documents (board materials, legal/financial filings, anything
+  with real consequences if wrong), treat this skill as a floor, not a substitute for a second
+  reviewer — human or a fresh model context with no memory of the drafting process.
 
 ## Quick self-test before you hit send
 
